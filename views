@@ -1,0 +1,108 @@
+contacts_activites
+
+create view contacts_activities(first_name, last_name, attributes, activity_date) as
+SELECT contacts.first_name,
+       contacts.last_name,
+       a.attributes,
+       a.activity_date
+FROM contacts
+         JOIN activities a ON contacts.team_id = a.team_id
+ORDER BY a.activity_date;
+
+alter table contacts_activities
+    owner to tslwnjjgbzhozd;
+--------------------------------------------------------------------
+last_ten_contacts
+
+create view last_ten_contacts
+            (id, team_id, touch_id, gender_id, status_id, address_id, language_id, timezone_id, first_name, middle_name,
+             last_name, subscriptions, birthday, avatar, created_at, updated_at, __typename)
+as
+SELECT contacts.id,
+       contacts.team_id,
+       contacts.touch_id,
+       contacts.gender_id,
+       contacts.status_id,
+       contacts.address_id,
+       contacts.language_id,
+       contacts.timezone_id,
+       contacts.first_name,
+       contacts.middle_name,
+       contacts.last_name,
+       contacts.subscriptions,
+       contacts.birthday,
+       contacts.avatar,
+       contacts.created_at,
+       contacts.updated_at,
+       contacts.__typename
+FROM contacts
+ORDER BY contacts.created_at DESC
+LIMIT 10;
+
+alter table last_ten_contacts
+    owner to tslwnjjgbzhozd;
+---------------------------------------------------
+marketing_count_status
+
+create view marketing_count_status(code, team_id, touch_id, count) as
+SELECT s.code,
+       marketing.team_id,
+       marketing.touch_id,
+       count(*) AS count
+FROM marketing
+         JOIN statuses s ON s.id = marketing.status_id
+GROUP BY s.code, marketing.team_id, marketing.touch_id
+ORDER BY (count(*)) DESC;
+
+alter table marketing_count_status
+    owner to tslwnjjgbzhozd;
+
+----------------------------------------------------------------
+marketing_daily
+create view marketing_daily(day, count) as
+SELECT date_trunc('day'::text, marketing.created_at) AS day,
+       count(1)                                      AS count
+FROM marketing
+GROUP BY (date_trunc('day'::text, marketing.created_at));
+
+alter table marketing_daily
+    owner to tslwnjjgbzhozd;
+----------------------------------------------------------------
+next_marketing
+
+create view next_marketing(id, team_id, touch_id, schedule) as
+SELECT marketing.id,
+       marketing.team_id,
+       marketing.touch_id,
+       marketing.schedule
+FROM marketing
+WHERE marketing.schedule >= (now() + '2 days'::interval);
+
+alter table next_marketing
+    owner to tslwnjjgbzhozd;
+----------------------------------------------------------------
+teams_contact
+create view teams_contact(name, first_name, last_name) as
+SELECT teams.name,
+       c.first_name,
+       c.last_name
+FROM teams
+         JOIN contacts c ON teams.id = c.team_id;
+
+alter table teams_contact
+    owner to tslwnjjgbzhozd;
+
+--------------------------------------------------------------
+total_contact
+create view total_contact(count) as
+SELECT count(*) AS count
+FROM contacts;
+
+alter table total_contact
+    owner to tslwnjjgbzhozd;
+
+
+
+
+
+
